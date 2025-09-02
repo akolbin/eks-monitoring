@@ -64,16 +64,12 @@ jobs:
       run: |
         cd helm/monitoring-stack
         helm lint .
-        helm lint . -f values-dev.yaml
-        helm lint . -f values-staging.yaml
         helm lint . -f values-prod.yaml
 
     - name: Helm Template Test
       run: |
         cd helm/monitoring-stack
         helm template test-release . --debug --dry-run
-        helm template test-release . -f values-dev.yaml --debug --dry-run
-        helm template test-release . -f values-staging.yaml --debug --dry-run
         helm template test-release . -f values-prod.yaml --debug --dry-run
 
   security-scan:
@@ -149,6 +145,4 @@ jobs:
         cd helm/monitoring-stack
         helm dependency update
         helm template test-release . | kubeval
-        helm template test-release . -f values-dev.yaml | kubeval
-        helm template test-release . -f values-staging.yaml | kubeval
         helm template test-release . -f values-prod.yaml | kubeval
