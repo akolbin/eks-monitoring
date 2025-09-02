@@ -1,8 +1,8 @@
 # Production Environment Configuration
 
-aws_region     = "us-east-1"
-environment    = "prod"
-cluster_name   = "eks-monitoring"
+aws_region      = "us-east-1"
+environment     = "prod"
+cluster_name    = "eks-monitoring"
 cluster_version = "1.28"
 
 vpc_cidr = "10.0.0.0/16"
