@@ -2,7 +2,7 @@
 
 # EBS CSI Driver IAM Role
 module "ebs_csi_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.0"
 
   role_name             = "${var.cluster_name}-ebs-csi-driver"
@@ -20,7 +20,7 @@ module "ebs_csi_irsa_role" {
 
 # Fluent Bit IAM Role
 module "fluent_bit_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.0"
 
   role_name = "${var.cluster_name}-fluent-bit"
@@ -73,7 +73,7 @@ resource "aws_iam_role_policy_attachment" "fluent_bit_s3" {
 
 # Prometheus IAM Role for CloudWatch integration
 module "prometheus_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.0"
 
   role_name = "${var.cluster_name}-prometheus"
@@ -121,7 +121,7 @@ resource "aws_iam_role_policy_attachment" "prometheus_cloudwatch" {
 
 # Grafana IAM Role
 module "grafana_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.0"
 
   role_name = "${var.cluster_name}-grafana"

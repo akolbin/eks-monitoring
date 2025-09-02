@@ -16,9 +16,9 @@ resource "aws_eks_addon" "ebs_csi" {
 
 # VPC CNI Add-on
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name      = module.eks.cluster_name
-  addon_name        = "vpc-cni"
-  addon_version     = "v1.15.1-eksbuild.1"
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "vpc-cni"
+  addon_version = "v1.15.1-eksbuild.1"
   depends_on = [
     module.eks.eks_managed_node_groups,
   ]
@@ -28,9 +28,9 @@ resource "aws_eks_addon" "vpc_cni" {
 
 # CoreDNS Add-on
 resource "aws_eks_addon" "coredns" {
-  cluster_name      = module.eks.cluster_name
-  addon_name        = "coredns"
-  addon_version     = "v1.10.1-eksbuild.5"
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "coredns"
+  addon_version = "v1.10.1-eksbuild.5"
 
   depends_on = [
     module.eks.eks_managed_node_groups,
@@ -41,9 +41,9 @@ resource "aws_eks_addon" "coredns" {
 
 # kube-proxy Add-on
 resource "aws_eks_addon" "kube_proxy" {
-  cluster_name      = module.eks.cluster_name
-  addon_name        = "kube-proxy"
-  addon_version     = "v1.28.2-eksbuild.2"
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "kube-proxy"
+  addon_version = "v1.28.2-eksbuild.2"
 
   depends_on = [
     module.eks.eks_managed_node_groups,
