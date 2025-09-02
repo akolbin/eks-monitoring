@@ -1,0 +1,75 @@
+# Staging environment values for monitoring-stack
+
+global:
+  region: us-east-1
+  clusterName: eks-monitoring-staging
+  environment: staging
+
+# Kube Prometheus Stack overrides for staging
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      # Standard retention for staging
+      retention: 15d
+      retentionSize: 40GB
+
+      # Standard resources for staging
+      resources:
+        requests:
+          cpu: 400m
+          memory: 1.5Gi
+        limits:
+          cpu: 1.5
+          memory: 6Gi
+
+      # Standard storage for staging
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 75Gi
+
+      # Service account with staging IAM role
+      serviceAccount:
+        annotations:
+          eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-staging-prometheus"
+
+  grafana:
+    # Standard resources for staging
+    resources:
+      requests:
+        cpu: 75m
+        memory: 96Mi
+      limits:
+        cpu: 300m
+        memory: 384Mi
+
+    # Standard persistence for staging
+    persistence:
+      size: 8Gi
+
+    # Service account with staging IAM role
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-staging-grafana"
+
+  alertmanager:
+    alertmanagerSpec:
+      # Standard storage for staging
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 8Gi
+
+# Fluent Bit overrides for staging
+fluent-bit:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-staging-fluent-bit"

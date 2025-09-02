@@ -1,0 +1,154 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  terraform-validate:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive terraform/
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init -backend=false
+
+    - name: Terraform Validate
+      run: |
+        cd terraform
+        terraform validate
+
+  helm-lint:
+    name: Helm Chart Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.13.0'
+
+    - name: Add Helm repositories
+      run: |
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add fluent https://fluent.github.io/helm-charts
+        helm repo update
+
+    - name: Helm Dependency Update
+      run: |
+        cd helm/monitoring-stack
+        helm dependency update
+
+    - name: Helm Lint
+      run: |
+        cd helm/monitoring-stack
+        helm lint .
+        helm lint . -f values-dev.yaml
+        helm lint . -f values-staging.yaml
+        helm lint . -f values-prod.yaml
+
+    - name: Helm Template Test
+      run: |
+        cd helm/monitoring-stack
+        helm template test-release . --debug --dry-run
+        helm template test-release . -f values-dev.yaml --debug --dry-run
+        helm template test-release . -f values-staging.yaml --debug --dry-run
+        helm template test-release . -f values-prod.yaml --debug --dry-run
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  yaml-lint:
+    name: YAML Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install yamllint
+      run: pip install yamllint
+
+    - name: Run yamllint
+      run: |
+        yamllint -d relaxed helm/
+        yamllint -d relaxed .github/workflows/
+
+  kubernetes-validate:
+    name: Kubernetes Manifest Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup kubeval
+      run: |
+        wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+        tar xf kubeval-linux-amd64.tar.gz
+        sudo mv kubeval /usr/local/bin
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.13.0'
+
+    - name: Add Helm repositories
+      run: |
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add fluent https://fluent.github.io/helm-charts
+        helm repo update
+
+    - name: Validate Kubernetes manifests
+      run: |
+        cd helm/monitoring-stack
+        helm dependency update
+        helm template test-release . | kubeval
+        helm template test-release . -f values-dev.yaml | kubeval
+        helm template test-release . -f values-staging.yaml | kubeval
+        helm template test-release . -f values-prod.yaml | kubeval

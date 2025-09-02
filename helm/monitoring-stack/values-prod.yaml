@@ -1,0 +1,136 @@
+# Production environment values for monitoring-stack
+
+global:
+  region: us-east-1
+  clusterName: eks-monitoring-prod
+  environment: prod
+
+# Kube Prometheus Stack overrides for production
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      # Extended retention for production
+      retention: 30d
+      retentionSize: 100GB
+
+      # Production resources
+      resources:
+        requests:
+          cpu: 1
+          memory: 4Gi
+        limits:
+          cpu: 4
+          memory: 16Gi
+
+      # Production storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 200Gi
+
+      # Service account with production IAM role
+      serviceAccount:
+        annotations:
+          eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-prod-prometheus"
+
+      # High availability configuration
+      replicas: 2
+
+      # Anti-affinity rules
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - prometheus
+              topologyKey: kubernetes.io/hostname
+
+  grafana:
+    # Production resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+    # Production persistence
+    persistence:
+      size: 20Gi
+
+    # High availability
+    replicas: 2
+
+    # Service account with production IAM role
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-prod-grafana"
+
+    # Production security settings
+    grafana.ini:
+      server:
+        root_url: https://grafana.company.com
+      security:
+        admin_password: ""  # Use secret in production
+        secret_key: ""      # Use secret in production
+      auth:
+        disable_login_form: true
+      auth.oauth:
+        enabled: true
+        name: AWS IAM
+        allow_sign_up: true
+        client_id: ""       # Set via secret
+        client_secret: ""   # Set via secret
+        scopes: openid email profile
+        auth_url: https://company.awsapps.com/start/
+        token_url: https://company.awsapps.com/start/
+        api_url: https://company.awsapps.com/start/
+
+  alertmanager:
+    alertmanagerSpec:
+      # Production resources
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+      # Production storage
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+
+      # High availability
+      replicas: 2
+
+# Fluent Bit overrides for production
+fluent-bit:
+  # Production resources
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-prod-fluent-bit"
