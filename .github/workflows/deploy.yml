@@ -26,6 +26,12 @@ on:
 env:
   AWS_REGION: us-east-1
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  id-token: write
+
 jobs:
   deploy-infrastructure:
     name: Deploy Infrastructure
