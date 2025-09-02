@@ -11,7 +11,7 @@ on:
       environment:
         description: 'Environment to validate'
         required: true
-        default: 'dev'
+        default: 'prod'
         type: choice
         options:
         - dev

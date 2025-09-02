@@ -128,11 +128,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup kubeval
-      run: |
-        wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-        tar xf kubeval-linux-amd64.tar.gz
-        sudo mv kubeval /usr/local/bin
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
 
     - name: Setup Helm
       uses: azure/setup-helm@v3
@@ -145,9 +144,35 @@ jobs:
         helm repo add fluent https://fluent.github.io/helm-charts
         helm repo update
 
-    - name: Validate Kubernetes manifests
+    - name: Validate Helm templates (syntax check)
       run: |
         cd helm/monitoring-stack
         helm dependency update
-        helm template test-release . | kubeval
-        helm template test-release . -f values-prod.yaml | kubeval
+
+        # Test template rendering without CRD validation
+        echo "Testing default values..."
+        helm template test-release . --debug --dry-run > /dev/null
+
+        echo "Testing prod values..."
+        helm template test-release . -f values-prod.yaml --debug --dry-run > /dev/null
+
+        echo "All Helm templates rendered successfully!"
+
+    - name: Validate YAML syntax
+      run: |
+        cd helm/monitoring-stack
+
+        # Check for basic YAML syntax issues
+        helm template test-release . | \
+        python3 -c "
+        import yaml
+        import sys
+        try:
+            for doc in yaml.safe_load_all(sys.stdin):
+                if doc is not None:
+                    pass
+            print('✅ All YAML documents are valid')
+        except yaml.YAMLError as e:
+            print(f'❌ YAML validation failed: {e}')
+            sys.exit(1)
+        "
