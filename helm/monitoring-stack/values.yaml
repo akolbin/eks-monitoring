@@ -269,4 +269,3 @@ fluent-bit:
           Time_Keep Off
           Time_Key time
           Time_Format %Y-%m-%dT%H:%M:%S.%L
-          

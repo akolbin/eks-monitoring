@@ -134,4 +134,3 @@ fluent-bit:
   serviceAccount:
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/eks-monitoring-prod-fluent-bit"
-      
