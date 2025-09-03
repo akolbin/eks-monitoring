@@ -24,7 +24,7 @@ module "eks" {
 
       # Launch template configuration
       create_launch_template = false
-      launch_template_name   = ""
+      launch_template_name   = "eks-monitoring"
 
       disk_size = 50
       disk_type = "gp3"
