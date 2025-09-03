@@ -104,7 +104,7 @@ jobs:
       uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.13.1
-    
+
     - name: Terraform Init
       run: |
         cd terraform
