@@ -43,7 +43,7 @@ resource "aws_eks_addon" "coredns" {
 resource "aws_eks_addon" "kube_proxy" {
   cluster_name  = module.eks.cluster_name
   addon_name    = "kube-proxy"
-  addon_version = "v1.28.2-eksbuild.2"
+  addon_version = "v1.33.2-eksbuild.2"
 
   depends_on = [
     module.eks.eks_managed_node_groups,

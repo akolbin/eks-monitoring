@@ -3,7 +3,7 @@
 aws_region      = "us-east-1"
 environment     = "prod"
 cluster_name    = "eks-monitoring"
-cluster_version = "1.28"
+cluster_version = "1.33"
 
 vpc_cidr = "10.0.0.0/16"
 
