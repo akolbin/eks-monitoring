@@ -19,7 +19,9 @@ terraform {
   }
 
   backend "s3" {
-    # Backend configuration will be provided via backend config file
+    bucket = "akolbin-eks-monitoring-terraform-state"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
   }
 }
 

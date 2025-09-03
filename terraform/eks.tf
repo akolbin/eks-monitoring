@@ -4,31 +4,12 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "21.1.5"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.cluster_version
+  name               = var.cluster_name
+  kubernetes_version = var.cluster_version
 
   vpc_id                         = module.vpc.vpc_id
   subnet_ids                     = module.vpc.private_subnets
-  cluster_endpoint_public_access = true
-
-  # OIDC Identity provider
-  cluster_identity_providers = {
-    sts = {
-      client_id = "sts.amazonaws.com"
-    }
-  }
-
-  # EKS Managed Node Group(s)
-  eks_managed_node_group_defaults = {
-    instance_types = var.node_group_instance_types
-
-    # We are using the IRSA created below for permissions
-    # However, we have to deploy with the policy attached FIRST (when creating a fresh cluster)
-    # and then turn this off after the cluster/node group is created. Without this initial policy,
-    # the VPC CNI fails to assign IPs and nodes cannot join the cluster
-    # See https://github.com/aws/containers-roadmap/issues/1666 for more context
-    iam_role_attach_cni_policy = true
-  }
+  endpoint_public_access         = true
 
   eks_managed_node_groups = {
     main = {
@@ -68,17 +49,6 @@ module "eks" {
       tags = var.tags
     }
   }
-
-  # aws-auth configmap
-  manage_aws_auth_configmap = true
-
-  aws_auth_roles = [
-    {
-      rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/AWSReservedSSO_AdministratorAccess_*"
-      username = "admin"
-      groups   = ["system:masters"]
-    },
-  ]
 
   tags = var.tags
 }
