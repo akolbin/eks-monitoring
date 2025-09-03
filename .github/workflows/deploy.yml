@@ -33,8 +33,8 @@ permissions:
   id-token: write
 
 jobs:
-  deploy-infrastructure:
-    name: Deploy Infrastructure
+  terraform-plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.inputs.force_deploy == 'true' }}
 
@@ -72,6 +72,40 @@ jobs:
         cd terraform
         terraform plan -var-file="environments/${{ matrix.environment }}.tfvars" -out=tfplan
 
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan-output
+        path: terraform/tfplan
+
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+
+    environment: "TF APPROVAL GATE"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4.3.1
+      with:
+        role-to-assume: arn:aws:iam::836072596305:role/GitHub_Actions_Runner
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.13.1
+
+    - name: Download Terraform Plan
+      uses: actions/download-artifact@v4
+      with:
+        name: terraform-plan-output
+        path: terraform/
+
     - name: Terraform Apply
       run: |
         cd terraform
@@ -100,7 +134,7 @@ jobs:
   deploy-monitoring:
     name: Deploy Monitoring Stack
     runs-on: ubuntu-latest
-    needs: deploy-infrastructure
+    needs: terraform-apply
 
     strategy:
       matrix:
@@ -166,7 +200,7 @@ jobs:
   post-deployment-tests:
     name: Post-Deployment Tests
     runs-on: ubuntu-latest
-    needs: [deploy-infrastructure, deploy-monitoring]
+    needs: [terraform-apply, deploy-monitoring]
 
     strategy:
       matrix:
@@ -239,7 +273,7 @@ jobs:
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [deploy-infrastructure, deploy-monitoring, post-deployment-tests]
+    needs: [terraform-apply, deploy-monitoring, post-deployment-tests]
     if: always()
 
     steps:
