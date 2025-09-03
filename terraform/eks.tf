@@ -23,7 +23,7 @@ module "eks" {
       desired_size = var.node_group_desired_size
 
       # Launch template configuration
-      create_launch_template = false
+      create_launch_template = true
       launch_template_name   = "eks-monitoring"
 
       disk_size = 50
