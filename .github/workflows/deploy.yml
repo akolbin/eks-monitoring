@@ -34,6 +34,9 @@ permissions:
 
 jobs:
   deploy-infrastructure:
+    permissions:
+      contents: read
+      id-token: write
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.inputs.force_deploy == 'true' }}
