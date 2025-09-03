@@ -1,20 +1,20 @@
 # EKS Monitoring Stack - Main Terraform Configuration
 
 terraform {
-  required_version = ">= 1.0"
+  required_version = "= 1.13.1"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 6.11.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.20"
+      version = ">= 2.38.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.10"
+      version = ">= 3.0.2"
     }
   }
 
