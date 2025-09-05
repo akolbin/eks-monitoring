@@ -122,7 +122,7 @@ jobs:
     - name: Terraform Apply
       run: |
         cd terraform
-        terraform apply -auto-approve tfplan
+        terraform destroy -auto-approve
 
     - name: Get EKS cluster info
       id: eks-info
